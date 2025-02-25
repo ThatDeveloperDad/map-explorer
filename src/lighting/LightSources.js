@@ -41,7 +41,7 @@ export const LightSources = {
             {
                 color: 0xeec600,    // Warm yellow ambient
                 intensity: 10,      // Dim outer glow
-                distance: 15,        // Modest range
+                distance: 20,        // Modest range
                 decay: 1.5          // Quick falloff
             }
         ]
