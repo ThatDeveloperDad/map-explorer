@@ -81,5 +81,5 @@ document.getElementById('LightSourceSelect').addEventListener('change', (e) => {
     game.setPartyLightSource(e.target.value);
 });
 
-game.setPartyLightSource('Candle');
+game.setPartyLightSource('LightSpell');
 game.initialize();

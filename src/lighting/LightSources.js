@@ -33,16 +33,16 @@ export const LightSources = {
         flickerAmount: 0.99,  // 75% variation - more unstable than torch
         lights: [
             {
-                color: 0xffd700,    // Bright yellow core
-                intensity: 1.0,      // Bright but very localized
-                distance: 3,         // Tiny range for the bright core
-                decay: 2.5          // Very rapid falloff
+                color: 0xffd733,    // Bright yellow core
+                intensity: 20.0,      // Bright but very localized
+                distance: 10,         // Tiny range for the bright core
+                decay: 1          // Very rapid falloff
             },
             {
                 color: 0xeec600,    // Warm yellow ambient
-                intensity: 0.3,      // Dim outer glow
+                intensity: 10,      // Dim outer glow
                 distance: 15,        // Modest range
-                decay: 2.0          // Quick falloff
+                decay: 1.5          // Quick falloff
             }
         ]
     }),
@@ -51,15 +51,15 @@ export const LightSources = {
         flickerAmount: 0.50,  // 50% variation for torch
         lights: [
             {
-                color: 0xffa95c,
-                intensity: 10.0,
-                distance: 60,
+                color: 0xffcc00,
+                intensity: 40.0,
+                distance: 30,
                 decay: 1
             },
             {
-                color: 0xffc1a0,
+                color: 0xaa6600,
                 intensity: 20.0,
-                distance: 30,
+                distance: 60,
                 decay: 1.5
             }
         ]
@@ -69,13 +69,13 @@ export const LightSources = {
         flickerAmount: 0.25,  // Very subtle 5% variation
         lights: [
             {
-                color: 0xffffaa,
+                color: 0xffff66,
                 intensity: 20.0,
                 distance: 120,
                 decay: 1
             },
             {
-                color: 0xffffee,
+                color: 0xffffaa,
                 intensity: 40.0,
                 distance: 30,
                 decay: 1.5

@@ -4,56 +4,7 @@ import { MaterialSets } from '../../materials/MaterialSets';
 import { LightSources } from '../../lighting/LightSources';
 
 export class ThreeJsRenderer extends Renderer2D {
-    setupLighting() {
-        // Main torch light - bright outer radius
-        this.torchLight = new THREE.PointLight(0xffa95c, 10.0, 60);  // Doubled intensity
-        this.torchLight.position.set(0, 5, 0);
-        this.torchLight.decay = 1;     // Reduced decay for better visibility
-        this.torchLight.distance = 60;
-
-        // Bright close-range light
-        this.brightLight = new THREE.PointLight(0xffc1a0, 20.0, 30); // Doubled intensity
-        this.brightLight.position.set(0, 5, 0);
-        this.brightLight.decay = 1.5;
-        this.brightLight.distance = 30;
-
-        // Add very dim ambient light to prevent total darkness
-        this.ambientLight = new THREE.AmbientLight(0xfafaff, 0.01);
-
-        this.scene.add(this.torchLight);
-        this.scene.add(this.brightLight);
-        this.scene.add(this.ambientLight);
-    }
-
-    setupMaterials() {
-
-        // roughness:  0 = smooth, 1 = rough.
-        // metalness:  0 = non metallic, 1 = metallic.
-
-        this.wallMaterial = new THREE.MeshStandardMaterial({
-            color: this.options.wallColor,
-            roughness: 0.8,      // Reduced for more reflectivity
-            metalness: 0.8,      // Slight metalness for better light response
-            //emissive: 0x111111   // Very slight self-illumination
-        });
-
-        this.floorMaterial = new THREE.MeshStandardMaterial({
-            color: this.options.floorColor,
-            roughness: .7,
-            metalness: 0,
-            side: THREE.DoubleSide,
-            //emissive: 0x111111
-        });
-
-        this.ceilingMaterial = new THREE.MeshStandardMaterial({
-            color: this.options.ceilingColor,
-            roughness: 0.1,
-            metalness: 0.5,
-            side: THREE.DoubleSide,
-            //emissive: 0x111111
-        });
-    }
-
+    
     constructor(containerId, map, options = {}) {
         console.log('Initializing ThreeJsRenderer...');
         super(containerId, {
@@ -104,13 +55,6 @@ export class ThreeJsRenderer extends Renderer2D {
         this.floorMaterial = materialSet.floorMaterial;
         this.ceilingMaterial = materialSet.ceilingMaterial;
         
-        // Create torch light source
-        this.lightSource = LightSources.Torch;
-        this.lightSource.lights.forEach(light => this.scene.add(light));
-
-        this.setupMaterials();
-        this.setupLighting();
-
         // Create floor plane matching map dimensions
         const floorGeometry = new THREE.PlaneGeometry(
             this.worldWidth,
@@ -159,25 +103,6 @@ export class ThreeJsRenderer extends Renderer2D {
             }
         }
 
-        // Add debug grid matching map dimensions and position
-        /* const gridHelper = new THREE.GridHelper(
-            Math.max(this.worldWidth, this.worldDepth),
-            Math.max(this.map.width, this.map.height),
-            0xff0000,
-            0x444444
-        );
-        // Position grid to match floor plane
-        gridHelper.position.x = this.worldWidth / 2;
-        gridHelper.position.z = this.worldDepth / 2;
-
-        this.scene.add(gridHelper);
-
-        const ceilingGridHelper = gridHelper.clone();
-        ceilingGridHelper.position.y = 10;
-        this.scene.add(ceilingGridHelper);
- */
-        console.log(`Floor and grid positioned at (${this.worldWidth/2}, 0, ${this.worldDepth/2})`);
-
         // Position camera at start position
         const startX = (this.map.start.x + 0.5) * this.options.blockSize;
         const startZ = (this.map.start.y + 0.5) * this.options.blockSize;
@@ -207,7 +132,7 @@ export class ThreeJsRenderer extends Renderer2D {
             if (this.currentLightSource && this.currentLightSource.flickerAmount > 0) {
                 this.currentLightSource.lights.forEach(light => {
                     const flicker = 1.0 + (Math.random() - 0.5) * this.currentLightSource.flickerAmount;
-                    light.power = light.baseIntensity * flicker;
+                    light.intensity = light.baseIntensity * flicker;
                 });
             }
             
@@ -220,24 +145,23 @@ export class ThreeJsRenderer extends Renderer2D {
     updateLightSource(newSource) {
         // Remove old lights if they exist
         if (this.currentLightSource) {
-            this.currentLightSource.lights.forEach(light => this.scene.remove(light));
-            this.currentLightSource.lights.forEach(light => light.dispose());
+            this.currentLightSource.lights.forEach(light => {
+                this.scene.remove(light);
+                light.dispose();
+            });
         }
         
         // Store the complete LightSource object
         this.currentLightSource = newSource;
         
-        // Add new lights to scene
+        // Add new lights to scene and store their base intensities
         this.currentLightSource.lights.forEach(light => {
-            const worldX = (this.lastX + 0.5) * this.options.blockSize;
-            const worldZ = (this.lastY + 0.5) * this.options.blockSize;
-            light.position.set(worldX, 5, worldZ);
-            light.baseIntensity = light.intensity;  // Store initial intensity
+            light.baseIntensity = light.intensity;
             this.scene.add(light);
         });
         
-        // Force a render update
-        this.renderer.render(this.scene, this.camera);
+        // Use render() to position lights and update the scene
+        this.render(this.lastX, this.lastY, this.camera.rotation.y);
     }
 
     checkVisibleFaces(row, col) {
@@ -393,21 +317,9 @@ export class ThreeJsRenderer extends Renderer2D {
         }
         
         this.camera.lookAt(lookX, 5, lookZ);
-
-        // Move lights to camera position
-        this.torchLight.position.set(worldX, 5, worldZ);
-        this.brightLight.position.set(worldX, 5, worldZ);
-        
-        // Update light positions
-        this.lightSource.setPosition(worldX, 5, worldZ);
-        
-        const directions = ['North', 'East', 'South', 'West'];
-        console.log(`Looking from (${worldX}, 5, ${worldZ}) toward (${lookX}, 5, ${lookZ}) - ${directions[facing]}`);
         
         // Update all current lights to follow player
         if (this.currentLightSource) {
-            const worldX = (playerX + 0.5) * this.options.blockSize;
-            const worldZ = (playerY + 0.5) * this.options.blockSize;
             this.currentLightSource.lights.forEach(light => {
                 light.position.set(worldX, 5, worldZ);
             });
