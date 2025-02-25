@@ -12,6 +12,11 @@ export class ThreeJsRenderer extends Renderer2D {
         this.map = map;
         this.options = this.initializeOptions(options);
         
+        // Store initial position values
+        this.lastX = map.start.x;
+        this.lastY = map.start.y;
+        this.lastFacing = map.start.facing;
+        
         this.setupScene();
         this.setupRenderer();
         this.camera = new Camera();
@@ -20,11 +25,17 @@ export class ThreeJsRenderer extends Renderer2D {
         this.stageBuilder = new StageBuilder(this.scene, this.options);
         this.stageBuilder.buildFromMap(this.map);
         
-        // Initialize lighting with bound render method
+        // Initialize lighting
         this.lightManager = new LightManager(this.scene);
         this.lightManager.setLightSource(LightSources.Torch);
         
+        // Position camera and force initial render
         this.positionCameraAtStart();
+        
+        // Force an immediate render with stored position values
+        requestAnimationFrame(() => {
+            this.render(this.lastX, this.lastY, this.lastFacing);
+        });
     }
 
     initializeOptions(options) {

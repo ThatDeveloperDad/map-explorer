@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MaterialSets } from '../../../materials/MaterialSets';
+import { TexturedMaterialSets, createTexturedMaterialSet } from '../../../materials/TexturedMaterialSets';
 import { CellBuilder } from './CellBuilder';
 
 export class StageBuilder {
@@ -58,15 +59,16 @@ export class StageBuilder {
     }
 
     setupMaterials() {
-        const materialSet = MaterialSets[this.map.materialSet || 'WorkedStone'];
-        if (!materialSet) {
-            throw new Error(`Material set '${this.map.materialSet}' not found`);
+        console.log('Setting up materials with set:', this.map.materialSet);
+        const materialSet = this.map.materialSet || 'Dungeon';
+        const textureDefinition = TexturedMaterialSets[materialSet];
+        
+        if (!textureDefinition) {
+            throw new Error(`Material set '${materialSet}' not found`);
         }
 
-        return {
-            wallMaterial: materialSet.wallMaterial,
-            floorMaterial: materialSet.floorMaterial,
-            ceilingMaterial: materialSet.ceilingMaterial
-        };
+        const materials = createTexturedMaterialSet(textureDefinition);
+        console.log('Final materials:', materials);
+        return materials;
     }
 }

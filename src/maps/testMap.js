@@ -34,7 +34,7 @@ export const testMap5x5 = {
 export const testMap20x20 = {
     width: 20,
     height: 21,
-    materialSet: 'RoughStone', // or 'RoughStone'
+    materialSet: 'Dungeon', // Changed from 'RoughStone' to 'Dungeon'
     grid: [
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], // 0
         [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1],
