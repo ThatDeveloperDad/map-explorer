@@ -60,8 +60,8 @@ export const testMap20x20 = {
     //  0                   10                  19
     ],
     start: {
-        x: 19,      // Start near the west wall
+        x: 3,      // Start near the west wall
         y: 19,     // Near the bottom
-        facing: 3  // Facing West?
+        facing: 0  // Facing West?
     }
 };
