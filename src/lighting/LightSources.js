@@ -3,7 +3,6 @@ import * as THREE from 'three';
 export class LightSource {
     constructor(name, properties) {
         this.name = name;
-        this.flickerAmount = properties.flickerAmount || 0;
         this.lights = properties.lights.map(def => {
             const light = new THREE.PointLight(
                 def.color,
@@ -11,7 +10,6 @@ export class LightSource {
                 def.distance
             );
             light.decay = def.decay;
-            light.baseIntensity = def.intensity; // Store original intensity
             return light;
         });
     }
@@ -30,7 +28,6 @@ export const LightSources = {
     // power describes the luminous power of the light source, in lumens.
 
     Candle: new LightSource('Candle', {
-        flickerAmount: 0.99,  // 75% variation - more unstable than torch
         lights: [
             {
                 color: 0xffd733,    // Bright yellow core
@@ -48,7 +45,6 @@ export const LightSources = {
     }),
 
     Torch: new LightSource('Torch', {
-        flickerAmount: 0.50,  // 50% variation for torch
         lights: [
             {
                 color: 0xffcc00,
@@ -66,7 +62,6 @@ export const LightSources = {
     }),
 
     Lantern: new LightSource('Lantern', {
-        flickerAmount: 0.25,  // Very subtle 5% variation
         lights: [
             {
                 color: 0xffff66,
@@ -84,7 +79,6 @@ export const LightSources = {
     }),
 
     LightSpell: new LightSource('LightSpell', {
-        flickerAmount: 0,  // No flicker for magical light
         lights: [
             {
                 color: 0xeeeeff,
