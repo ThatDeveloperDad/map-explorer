@@ -2,6 +2,7 @@ import { Renderer2D } from './Renderer2D';
 import * as THREE from 'three';
 import { MaterialSets } from '../../materials/MaterialSets';
 import { LightSources } from '../../lighting/LightSources';
+import { Camera } from './3dSupport/Camera';
 
 export class ThreeJsRenderer extends Renderer2D {
     
@@ -31,14 +32,9 @@ export class ThreeJsRenderer extends Renderer2D {
         // Set scene background to pure black
         this.scene.background = new THREE.Color(0x000000);
 
-        // Create camera with reasonable FPS view settings
-        this.camera = new THREE.PerspectiveCamera(
-            100,     // 60-degree FOV
-            4/3,    // 4:3 aspect ratio
-            0.1,    // Near clip
-            100    // Far clip
-        );
-
+        // Initialize camera
+        this.camera = new Camera();
+        
         // Create WebGL renderer
         this.renderer = new THREE.WebGLRenderer({
             antialias: true
@@ -107,8 +103,8 @@ export class ThreeJsRenderer extends Renderer2D {
         const startX = (this.map.start.x + 0.5) * this.options.blockSize;
         const startZ = (this.map.start.y + 0.5) * this.options.blockSize;
         
-        this.camera.position.set(startX, 5, startZ);
-        this.camera.lookAt(startX, 5, startZ - 10); // Look 10' north
+        this.camera.setPosition(startX, 5, startZ);
+        this.camera.updateRotation(0, startX, startZ); // Look north initially
 
         console.log(`Camera positioned at (${startX}, 5, ${startZ})`);
         this.renderer.render(this.scene, this.camera);
@@ -161,7 +157,7 @@ export class ThreeJsRenderer extends Renderer2D {
         });
         
         // Use render() to position lights and update the scene
-        this.render(this.lastX, this.lastY, this.camera.rotation.y);
+        this.render(this.lastX, this.lastY, this.camera.getRotation());
     }
 
     checkVisibleFaces(row, col) {
@@ -293,38 +289,19 @@ export class ThreeJsRenderer extends Renderer2D {
     }
 
     render(playerX, playerY, facing) {
-        // Store last position for light source updates
-        this.lastX = playerX;
-        this.lastY = playerY;
-
-        // Convert map grid position to world coordinates
         const worldX = (playerX + 0.5) * this.options.blockSize;
         const worldZ = (playerY + 0.5) * this.options.blockSize;
         
-        // Update camera position
-        this.camera.position.set(worldX, 5, worldZ);
+        this.camera.setPosition(worldX, 5, worldZ);
+        this.camera.updateRotation(facing, worldX, worldZ);
         
-        // Calculate look target based on cardinal directions
-        let lookX = worldX;
-        let lookZ = worldZ;
-        
-        // facing values: 0=North, 1=East, 2=South, 3=West
-        switch (facing) {
-            case 0: lookZ = worldZ - 10; break; // North
-            case 1: lookX = worldX + 10; break; // East
-            case 2: lookZ = worldZ + 10; break; // South
-            case 3: lookX = worldX - 10; break; // West
-        }
-        
-        this.camera.lookAt(lookX, 5, lookZ);
-        
-        // Update all current lights to follow player
         if (this.currentLightSource) {
             this.currentLightSource.lights.forEach(light => {
                 light.position.set(worldX, 5, worldZ);
             });
         }
 
-        this.renderer.render(this.scene, this.camera);
+        // Use getCamera() to access the THREE.Camera instance
+        this.renderer.render(this.scene, this.camera.getCamera());
     }
 }

@@ -16,16 +16,30 @@ import * as THREE from 'three';
 
 export class Camera {
     constructor(options = {}) {
+        // Create the THREE.PerspectiveCamera instance
         this.camera = new THREE.PerspectiveCamera(
-            100,     // 60-degree FOV
-            4/3,    // 4:3 aspect ratio
-            0.1,    // Near clip
-            100    // Far clip
+            100,    // FOV
+            4/3,    // aspect ratio
+            0.1,    // near clip
+            100     // far clip
         );
+    }
+
+    // Getter to access the THREE.Camera instance directly
+    getCamera() {
+        return this.camera;
     }
 
     setPosition(x, y, z) {
         this.camera.position.set(x, y, z);
+    }
+
+    getRotation() {
+        return this.camera.rotation.y;
+    }
+
+    setRotation(y) {
+        this.camera.rotation.y = y;
     }
 
     lookAt(x, y, z) {
@@ -43,6 +57,6 @@ export class Camera {
             case 3: lookX = worldX - 10; break; // West
         }
         
-        this.lookAt(lookX, 5, lookZ);
+        this.camera.lookAt(lookX, 5, lookZ);
     }
 }
